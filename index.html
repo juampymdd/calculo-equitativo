@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+  <title>Calculadora de Alquiler</title>
+  <style>
+    .form-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .w-100 {
+      width: 100%;
+    }
+
+    input {
+      text-align: center;
+      width: 100%;
+    }
+    .results {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+
+  <script>
+
+    // TODO: DOMContentLoding
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('form-calc');
+      const ingreso1 = document.getElementById('ingreso1');
+      const ingreso2 = document.getElementById('ingreso2');
+      const montoAPagar = document.getElementById('montoAPagar');
+      const results = document.getElementById('results');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        // url del servidor
+        const url = '/calcular';
+        console.log(url);
+        // datos a enviar
+        const data = {
+          ingreso1: ingreso1.value,
+          ingreso2: ingreso2.value,
+          montoAPagar: montoAPagar.value
+        }
+
+        console.log(JSON.stringify({ ...data }))
+        // controlar que todos los datos esten completos
+        if (data.ingreso1 === '' || data.ingreso2 === '' || data.montoAPagar === '') {
+          alert('Todos los campos son obligatorios');
+          return;
+        }
+
+        const result = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ ...data })
+        })
+        const resultJson = await result.json();
+        console.log(resultJson)
+        html = `
+        <table>
+          <thead>
+          <tr>
+            <th>#</th>
+            <th>Monto</th>
+            <th>Porcentaje</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>Ingreso 1</td>
+            <td>${formatearNumero(resultJson.total1)}</td>
+            <td>${parseFloat(resultJson.porcentaje1).toFixed(2)}%</td>
+          </tr>
+          <tr>
+            <td>Ingreso 2</td>
+            <td>${formatearNumero(resultJson.total2)}</td>
+            <td>${parseFloat(resultJson.porcentaje2).toFixed(2)}%</td>
+          </tr>
+          </tbody>
+        </table>
+        `
+        results.innerHTML = html;
+      })
+
+
+
+    }) // TODO: fin DOMContentLoaded
+
+    formatearNumero = (numero) => {
+      const formatter = new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: 'ARS', // Código de moneda para el peso argentino
+        minimumFractionDigits: 2, // Número mínimo de dígitos decimales
+      });
+
+      return formatter.format(numero);
+    }
+
+  </script>
+</head>
+
+<body>
+  <h1>Calculadora de alquiler</h1>
+  <main>
+    <form action="" id="form-calc">
+      <div class="form-content">
+        <div class="form-content-input">
+          <label for="ingreso 1">Ingreso 1</label>
+          <input type="number" name="ingreso1" id="ingreso1" placeholder="Ingreso 1">
+        </div>
+        <div class="form-content-input">
+          <label for="ingreso 1">Ingreso 2</label>
+          <input type="number" name="ingreso2" id="ingreso2" placeholder="Ingreso 2">
+        </div>
+        <div class="form-content-input">
+          <label for="total">Monto a pagar</label>
+          <input type="number" name="montoAPagar" id="montoAPagar" placeholder="Monto a pagar">
+        </div>
+        <button>Calcular</button>
+      </div>
+    </form>
+  </main>
+  <section id="results" class="results"></section>
+</body>
+
+</html>
